@@ -48,7 +48,7 @@ public class LevelGen : MonoBehaviour
         //GENERATE OBSTACLES
         while (obstaclesEnd.position.y < levelEnd.position.y+GEN_DISTANCE) {
             GameObject obstacle = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
-            float size = GameManager.Instance.FindChildWithTag(obstacle, "ObstacleEnd").transform.position.y;
+            float size = FindObjectOfType<GameManager>().FindChildWithTag(obstacle, "ObstacleEnd").transform.position.y;
             GameObject generatedObstacle = Instantiate(obstacle, obstaclesEnd.position, Quaternion.identity);
             spawnedObstacles.Add(generatedObstacle);
             

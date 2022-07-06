@@ -11,6 +11,10 @@ TagManager:
   - PlusShot
   - UI_ShotsLeft
   - UI_Score
+  - RestartButton
+  - MenuButton
+  - StartButton
+  - SettingsButton
   layers:
   - Default
   - TransparentFX

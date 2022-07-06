@@ -20,7 +20,7 @@ public class InputManager : MonoBehaviour
         
     }
 
-    void Update() {
+    public void GetInput() {
         if (Input.touchCount > 0) {
             for (int i = 0; i < Input.touchCount; i++) {
                 Touch touch = Input.GetTouch(i);

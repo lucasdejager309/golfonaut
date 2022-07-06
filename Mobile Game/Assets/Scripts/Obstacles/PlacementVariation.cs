@@ -25,7 +25,7 @@ public class PlacementVariation : MonoBehaviour
     public VariateDelegate variateDelegate;
 
     void Awake() {
-        variateDelegate += GameManager.Instance.Null;
+        variateDelegate += FindObjectOfType<GameManager>().Null;
     }
 
     public void Variate() {

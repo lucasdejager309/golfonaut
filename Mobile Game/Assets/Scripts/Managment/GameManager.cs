@@ -5,61 +5,81 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 
-public class GameManager : Singleton<GameManager>
+public class GameManager : MonoBehaviour
 {
     public bool GENERATE;
 
     public int score;
     public int startWithShots = 3;
-    public int shots;
+    [SerializeField] int shots;
+    public bool takeInput = true;
 
-    Transform player;
+    PlayerScript player;
     Vector2 playerSpawnPos;
 
-    Text shotsLeft;
-    Text scoreUI;
-
-    float startY;
+    Text shotsLeftText;
+    Text scoreText;
     float currentY;
 
     LevelGen levelGen;
-
-    void Awake() {
-        Instance = this;
-    }
+    UIManager uiManager;
 
     void Start() {
-        player = GameObject.FindObjectOfType<PlayerScript>().transform;
-        playerSpawnPos = player.position;
-        startY = player.transform.position.y;
-        shotsLeft = GameObject.FindGameObjectWithTag("UI_ShotsLeft").GetComponent<Text>();
-        scoreUI = GameObject.FindGameObjectWithTag("UI_Score").GetComponent<Text>();
+        GameObject.FindGameObjectWithTag("RestartButton").GetComponent<Button>().onClick.AddListener(delegate {Restart();});
+        GameObject.FindGameObjectWithTag("MenuButton").GetComponent<Button>().onClick.AddListener(delegate {Exit();});
+
+        player = GameObject.FindObjectOfType<PlayerScript>();
+        playerSpawnPos = player.transform.position;
+
+        uiManager = GetComponent<UIManager>();
         levelGen = FindObjectOfType<LevelGen>();
-        shots = startWithShots;
-        UpdateShots();
+
+        shotsLeftText = GameObject.FindGameObjectWithTag("UI_ShotsLeft").GetComponent<Text>();
+        scoreText = GameObject.FindGameObjectWithTag("UI_Score").GetComponent<Text>();
+
+        Invoke("StartGame", 0.01f);
     }
 
     void Update() {
+        GetComponent<InputManager>().GetInput();
         CheckScore();
 
         if (GENERATE) {
-            if ((levelGen.levelEnd.position.y - player.position.y) < levelGen.GEN_DISTANCE) {
+            if ((levelGen.levelEnd.position.y - player.transform.position.y) < levelGen.GEN_DISTANCE) {
                 levelGen.GenerateNewSection();
                 levelGen.levelEnd.position = new Vector2(levelGen.levelEnd.position.x, levelGen.levelEnd.position.y+levelGen.GEN_DISTANCE); 
             }
         }
     }
 
-    void Restart() {
-        levelGen.Restart();
-
-        player.position = playerSpawnPos;
+    void StartGame() {
+        uiManager.SetUIState("IN_GAME");
+        player.transform.position = playerSpawnPos;
+        SetShots(startWithShots);
         score = 0;
-        shots = startWithShots;
+        PauseInput(0.1f);
+    }
+
+    public void Restart() {
+        levelGen.Restart();
+        StartGame();
+    }
+    
+    void PauseInput(float time) {
+        takeInput = false;
+        Invoke("CanShootAgain", time);
+    }
+
+    void CanShootAgain() {
+        takeInput = true;
+    }
+
+    public void Exit() {
+        SceneManager.LoadScene(0);
     }
 
     public void AddShot(int amount) {
-        shots += amount;
+        SetShots(GetShots()+amount);
         UpdateShots();
     }
     public void SetShots(int amount) {
@@ -67,16 +87,21 @@ public class GameManager : Singleton<GameManager>
         UpdateShots();
     }
 
+    public int GetShots() {
+        return shots;
+    }
+
     public void UpdateShots() {
-        shotsLeft.text = shots.ToString();
+        if (shotsLeftText == null) shotsLeftText = GameObject.FindGameObjectWithTag("UI_ShotsLeft").GetComponent<Text>();
+        shotsLeftText.text = GetShots().ToString();
     }
 
     void CheckScore() {
         currentY = player.transform.position.y;
-        if (currentY - startY > score) {
-            score = (int)(currentY - startY);
+        if (currentY - playerSpawnPos.y > score) {
+            score = (int)(currentY - playerSpawnPos.y);
         }
-        scoreUI.text = score.ToString();
+        scoreText.text = score.ToString();
     }
 
     public GameObject FindChildWithTag(GameObject parent, string tag) {

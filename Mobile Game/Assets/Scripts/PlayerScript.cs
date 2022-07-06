@@ -11,19 +11,25 @@ public class PlayerScript : MonoBehaviour
 
     //variables
     Vector2 lastPos;
-    int lastShotAmount;
+    public int lastShotAmount;
 
     //exposed parameters
     public float MOVE_FORCE_MULTIPLIER = 200;
 
+    public bool isMoving;
+
     public delegate void PlayerMoves();
     public PlayerMoves playerMove;
+
+    GameManager gameManager;
 
     void Start() {
         line = this.GetComponent<LineRenderer>();
         rb = this.GetComponent<Rigidbody2D>();
 
-        playerMove += GameManager.Instance.Null;
+        gameManager = FindObjectOfType<GameManager>();
+
+        playerMove += gameManager.Null;
 
         GameObject.FindGameObjectWithTag("RetryButton").GetComponent<Button>().onClick.AddListener(delegate {Retry();});
     }
@@ -32,11 +38,13 @@ public class PlayerScript : MonoBehaviour
         if (CanShoot() && rb.velocity.magnitude == 0) {
             if (input != new Vector2(0,0)) {
                 lastPos = new Vector2(transform.position.x, transform.position.y);
-                lastShotAmount = GameManager.Instance.shots;
+                lastShotAmount = gameManager.GetShots();
 
                 rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
                 rb.angularVelocity = Random.Range(-360, 360);
-                GameManager.Instance.AddShot(-1);
+                gameManager.AddShot(-1);
+
+                isMoving = true;
 
                 playerMove();
             }
@@ -44,22 +52,26 @@ public class PlayerScript : MonoBehaviour
     }
 
     bool CanShoot() {
-        if (GameManager.Instance.shots > 0) return true;
-        else return false;
+        if (gameManager.GetShots() > 0 && gameManager.takeInput) {
+            return true;
+        } else return false;
     }
 
-    public void Retry() {  
-        if (lastPos != new Vector2(transform.position.x, transform.position.y)) {
+    public void Retry() { 
+        if (gameManager.GetShots() <= 0) {
+            FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
+        } else if (lastPos != new Vector2(transform.position.x, transform.position.y)) {
             rb.velocity = new Vector2(0,0);
             transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
-            GameManager.Instance.SetShots(lastShotAmount);  
+            gameManager.AddShot(-1);
         }
     }
 
-    void Update() {
+    void FixedUpdate() {
         float velocity = rb.velocity.magnitude;
         if (velocity < 0.1) {
             rb.velocity = new Vector2(0,0);
+            isMoving = false;
         }
     }
 

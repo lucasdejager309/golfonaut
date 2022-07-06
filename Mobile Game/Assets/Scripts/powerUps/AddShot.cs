@@ -7,7 +7,7 @@ public class AddShot :  MonoBehaviour, IPowerUp
     public int shotsToAdd = 1;
 
     public void PowerUp() {
-        GameManager.Instance.AddShot(shotsToAdd);
+        FindObjectOfType<GameManager>().AddShot(shotsToAdd);
         Destroy(this.gameObject);
     }
 }
