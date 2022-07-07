@@ -11,7 +11,7 @@ public class PlayerScript : MonoBehaviour
 
     //variables
     Vector2 lastPos;
-    public int lastShotAmount;
+
 
     //exposed parameters
     public float MOVE_FORCE_MULTIPLIER = 200;
@@ -30,41 +30,43 @@ public class PlayerScript : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
 
         playerMove += gameManager.Null;
-
-        GameObject.FindGameObjectWithTag("RetryButton").GetComponent<Button>().onClick.AddListener(delegate {Retry();});
     }
 
     public void Move(Vector2 input) {
         if (CanShoot() && rb.velocity.magnitude == 0) {
             if (input != new Vector2(0,0)) {
                 lastPos = new Vector2(transform.position.x, transform.position.y);
-                lastShotAmount = gameManager.GetShots();
+                gameManager.shots.lastShotAmount = gameManager.shots.GetAmount();
 
                 rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
                 rb.angularVelocity = Random.Range(-360, 360);
-                gameManager.AddShot(-1);
-
-                isMoving = true;
-
+                
+                //prevents death screen from triggering
+                Invoke("SubtractShot", 0.1f);
+                
                 playerMove();
             }
         }
     }
+    
+    void SubtractShot() {
+        gameManager.shots.AddAmount(-1);
+    }
 
     bool CanShoot() {
-        if (gameManager.GetShots() > 0 && gameManager.takeInput) {
+        if (gameManager.shots.GetAmount() > 0 && gameManager.takeInput) {
             return true;
         } else return false;
     }
 
-    public void Retry() { 
-        if (gameManager.GetShots() <= 0) {
-            FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
-        } else if (lastPos != new Vector2(transform.position.x, transform.position.y)) {
-            rb.velocity = new Vector2(0,0);
-            transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
-            gameManager.AddShot(-1);
-        }
+    public void Retry() {
+        rb.velocity = new Vector2(0,0);
+        transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
+    }
+
+    public void Die() {
+        gameManager.retries.SetCharge(0);
+        Retry();
     }
 
     void FixedUpdate() {
@@ -72,6 +74,12 @@ public class PlayerScript : MonoBehaviour
         if (velocity < 0.1) {
             rb.velocity = new Vector2(0,0);
             isMoving = false;
+        } else {
+            isMoving = true;
+        }
+
+        if (!isMoving && gameManager.shots.GetAmount() <= 0 && gameManager.retries.GetAmount() <= 0) {
+            FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
         }
     }
 

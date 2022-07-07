@@ -41,15 +41,12 @@ public class LevelGen : MonoBehaviour
     }
 
     public void GenerateNewSection() {
-        //GENERATE SIDEWALLS
-        Instantiate(wallsPrefab, levelEnd.position, Quaternion.identity);
-        
-
         //GENERATE OBSTACLES
         while (obstaclesEnd.position.y < levelEnd.position.y+GEN_DISTANCE) {
             GameObject obstacle = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
             float size = FindObjectOfType<GameManager>().FindChildWithTag(obstacle, "ObstacleEnd").transform.position.y;
             GameObject generatedObstacle = Instantiate(obstacle, obstaclesEnd.position, Quaternion.identity);
+            generatedObstacle.transform.position = new Vector3(generatedObstacle.transform.position.x, generatedObstacle.transform.position.y, generatedObstacle.transform.position.z+2);
             spawnedObstacles.Add(generatedObstacle);
             
             if (VARIATE) generatedObstacle.GetComponent<PlacementVariation>().Variate();
@@ -63,5 +60,8 @@ public class LevelGen : MonoBehaviour
             
             obstaclesEnd.position += new Vector3(0, size, 0);
         }
+
+        //GENERATE SIDEWALLS
+        Instantiate(wallsPrefab, levelEnd.position, Quaternion.identity);
     }
 }

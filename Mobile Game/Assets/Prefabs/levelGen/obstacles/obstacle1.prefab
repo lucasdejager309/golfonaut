@@ -55,6 +55,8 @@ MonoBehaviour:
   - 0
   mirrorHorVar: 1
   mirrorVerVar: 0
+  didMirrorHorVar: 0
+  didMirrorVerVar: 0
 --- !u!1 &4690442192170347456
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,15 +174,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7791457602814862554, guid: 2df55c7a824201d4c84f250885085174, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.006
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7791457602814862554, guid: 2df55c7a824201d4c84f250885085174, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.006
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7791457602814862554, guid: 2df55c7a824201d4c84f250885085174, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.981
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 7791457602814862554, guid: 2df55c7a824201d4c84f250885085174, type: 3}
       propertyPath: m_LocalPosition.y

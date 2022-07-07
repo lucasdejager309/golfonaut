@@ -83,6 +83,8 @@ MonoBehaviour:
   rotationVariation: []
   mirrorHorVar: 0
   mirrorVerVar: 0
+  didMirrorHorVar: 0
+  didMirrorVerVar: 0
 --- !u!1 &4690442192170347456
 GameObject:
   m_ObjectHideFlags: 0
