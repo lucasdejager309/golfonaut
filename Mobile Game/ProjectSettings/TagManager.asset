@@ -17,6 +17,8 @@ TagManager:
   - SettingsButton
   - UI_RetriesLeft
   - UI_HighScore
+  - ResumeButton
+  - PauseButton
   layers:
   - Default
   - TransparentFX

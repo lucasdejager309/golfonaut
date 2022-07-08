@@ -13,6 +13,7 @@ public class StopOnTouch : MonoBehaviour
             rb.velocity = new Vector2(0, 0);
             rb.angularVelocity = 0;
             GetComponentInChildren<Gravity>().Toggle(false);
+            if (col.gameObject.GetComponent<PlayerScript>()) col.gameObject.GetComponent<PlayerScript>().StopBall();
         }
     }
 }

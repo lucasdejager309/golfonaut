@@ -10,18 +10,19 @@ public class PlayerScript : MonoBehaviour
     Rigidbody2D rb;
 
     //variables
-    Vector2 lastPos;
-
+    public Vector2 lastPos;
+    public Shots shots;
 
     //exposed parameters
     public float MOVE_FORCE_MULTIPLIER = 200;
 
     public bool isMoving;
+    public bool inGravField;
 
     public delegate void PlayerMoves();
     public PlayerMoves playerMove;
 
-    GameManager gameManager;
+    public GameManager gameManager;
 
     void Start() {
         line = this.GetComponent<LineRenderer>();
@@ -33,54 +34,51 @@ public class PlayerScript : MonoBehaviour
     }
 
     public void Move(Vector2 input) {
-        if (CanShoot() && rb.velocity.magnitude == 0) {
+        if (shots.Shoot() && gameManager.takeInput && rb.velocity.magnitude == 0) {
             if (input != new Vector2(0,0)) {
                 lastPos = new Vector2(transform.position.x, transform.position.y);
-                gameManager.shots.lastShotAmount = gameManager.shots.GetAmount();
 
                 rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
                 rb.angularVelocity = Random.Range(-360, 360);
-                
-                //prevents death screen from triggering
-                Invoke("SubtractShot", 0.1f);
-                
+
                 playerMove();
+                isMoving = true;
             }
         }
     }
     
-    void SubtractShot() {
-        gameManager.shots.AddAmount(-1);
-    }
-
-    bool CanShoot() {
-        if (gameManager.shots.GetAmount() > 0 && gameManager.takeInput) {
-            return true;
-        } else return false;
-    }
 
     public void Retry() {
-        rb.velocity = new Vector2(0,0);
-        transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
+        if (shots.currentRetries > 0 && (Vector2)transform.position != lastPos) {
+            shots.ResetToLast(true);
+            GoToLastPos();
+        }
+
+        Gravity[] gravs = FindObjectsOfType<Gravity>();
+        foreach (Gravity grav in gravs) grav.Exit();
     }
 
     public void Die() {
-        gameManager.retries.SetCharge(0);
-        Retry();
+        shots.ResetToLast(false);
+        GoToLastPos();
+        StopBall();
+    }
+
+    public void GoToLastPos() {
+        transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
     }
 
     void FixedUpdate() {
         float velocity = rb.velocity.magnitude;
-        if (velocity < 0.1) {
-            rb.velocity = new Vector2(0,0);
-            isMoving = false;
-        } else {
-            isMoving = true;
+        if (velocity < 0.1 && velocity > 0 && !inGravField) {
+            StopBall();
         }
+    }
 
-        if (!isMoving && gameManager.shots.GetAmount() <= 0 && gameManager.retries.GetAmount() <= 0) {
-            FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
-        }
+    public void StopBall() {
+        rb.velocity = new Vector2(0,0);
+        isMoving = false;
+        if (shots.currentShots <= 0 && shots.currentRetries <= 0) gameManager.GameOver();
     }
 
     void OnTriggerEnter2D(Collider2D collider) {
@@ -88,7 +86,7 @@ public class PlayerScript : MonoBehaviour
     }
 
     public void DrawLine(Vector2 start, Vector2 end) {
-        if (CanShoot() && rb.velocity.magnitude == 0) {
+        if (shots.currentShots > 0 && !isMoving) {
             Vector2 lineVector = end - start;
             line.SetPosition(0, (Vector2)transform.position);
             line.SetPosition(1, (Vector2)transform.position-lineVector);

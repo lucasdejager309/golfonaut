@@ -62,6 +62,7 @@ public class LevelGen : MonoBehaviour
         }
 
         //GENERATE SIDEWALLS
-        Instantiate(wallsPrefab, levelEnd.position, Quaternion.identity);
+        GameObject walls = Instantiate(wallsPrefab, levelEnd.position, Quaternion.identity);
+        spawnedObstacles.Add(walls);
     }
 }

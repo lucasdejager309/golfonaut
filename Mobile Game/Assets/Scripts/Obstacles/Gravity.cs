@@ -17,17 +17,17 @@ public class Gravity : MonoBehaviour
     public GravDir GRAV_DIR = GravDir.point;
     public float GRAVITY_STRENGTH = 9;
 
-    bool doGravity = true;
-    bool inField = false;
     PlacementVariation var;
     SpriteRenderer arrows;
+
+    bool doGravity = true;
 
     public void Toggle(bool state) {
         doGravity = state;
     }
 
     void Awake() {
-        FindObjectOfType<PlayerScript>().playerMove += DoGravity;
+        FindObjectOfType<PlayerScript>().playerMove += delegate {Toggle(true); };
         if (GRAV_DIR != GravDir.point) {
             arrows = transform.GetChild(0).GetComponent<SpriteRenderer>();
             ScaleArrows();
@@ -37,14 +37,12 @@ public class Gravity : MonoBehaviour
         }
     }
 
-    void Start() {
-    }
-
-    void OnTriggerEnter2D(Collider2D col) {
-        inField = true;
-    }
-
     void OnTriggerStay2D(Collider2D col) {
+        PlayerScript player;
+        if (player = col.GetComponent<PlayerScript>()) {
+            player.inGravField = true;
+        }
+
         if (col.GetComponent<Rigidbody2D>() && doGravity) {
             Rigidbody2D rb = col.GetComponent<Rigidbody2D>();
 
@@ -75,13 +73,11 @@ public class Gravity : MonoBehaviour
     }
 
     void OnTriggerExit2D(Collider2D col) {
-        inField = false;
+        if (col.GetComponent<PlayerScript>()) Exit();
     }
 
-    void DoGravity() {
-        if (inField) {
-            Toggle(true);
-        }
+    public void Exit() {
+        FindObjectOfType<PlayerScript>().inGravField = false;
     }
 
     void ScaleArrows() {
