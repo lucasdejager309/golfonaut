@@ -14,7 +14,6 @@ public class StopOnTouch : MonoBehaviour
                 col.gameObject.GetComponent<PlayerScript>().gameManager.EndOfShot();
             } else {
                 rb.velocity = new Vector2(0, 0);
-                Debug.Log("hi");
                 rb.angularVelocity = 0;
             }
             

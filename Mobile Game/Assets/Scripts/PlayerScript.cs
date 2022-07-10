@@ -32,6 +32,7 @@ public class PlayerScript : MonoBehaviour {
 
         playerMove += delegate {};
         playerReset += delegate {};
+        playerStop += delegate {};
     }
 
     void FixedUpdate() {
