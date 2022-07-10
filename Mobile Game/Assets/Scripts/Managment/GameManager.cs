@@ -102,12 +102,14 @@ public class GameManager : MonoBehaviour
 
     public void Die() {
         player.StopBall();
+
         if (player.shots.currentShots > 0) {
             player.GoToLastPos();
             player.shots.ResetToLast(false, false);
-        } else if (player.shots.currentRetries > 0) {
+        } else if (player.shots.currentRetries > 0 && player.shots.currentShots <= 0) {
             player.GoToLastPos();
             player.shots.ResetToLast(true, false);
+            player.shots.SetShots(1);
         } else GameOver();
     }
 

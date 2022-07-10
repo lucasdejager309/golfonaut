@@ -15,7 +15,7 @@ public class Rotate : MonoBehaviour
         if (rotatecircles) {    
             transform.Rotate(0, 0, rotationSpeed, Space.Self);
         } else {
-            
+            //TODO: lerp rotation
         }
     }
 }

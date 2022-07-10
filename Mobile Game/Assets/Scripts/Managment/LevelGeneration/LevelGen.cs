@@ -79,12 +79,10 @@ public class LevelGen : MonoBehaviour
     }
 
     DifficultyGroup GetDifficulty(int currentScore) {
-        int difficulty = Mathf.CeilToInt((currentScore/DIFFICULTY_SCALE)*difficultyGroups.Length);
-        Debug.Log(difficulty);
+        int difficulty = Mathf.Clamp(Mathf.CeilToInt((currentScore/DIFFICULTY_SCALE)*difficultyGroups.Length), 0, difficultyGroups.Length);
 
         int curve = Random.Range(0, difficultyGroups.Length) + Random.Range(0,difficultyGroups.Length) - (difficultyGroups.Length)-1;
         int result = Mathf.Clamp(difficulty + curve, 0, difficultyGroups.Length-1);
-        //Debug.Log(result);
 
         return difficultyGroups[result];
     }
