@@ -105,8 +105,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
-  relativePos1: {x: -3, y: 0}
-  relativePos2: {x: 3, y: 0}
+  points:
+  - {x: -2, y: 0}
+  - {x: -2, y: 2}
+  - {x: 2, y: 2}
+  - {x: 2, y: 0}
 --- !u!1001 &1164890975
 PrefabInstance:
   m_ObjectHideFlags: 0
