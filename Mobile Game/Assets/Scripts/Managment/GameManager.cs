@@ -127,12 +127,14 @@ public class GameManager : MonoBehaviour
 
     public void Pause() {
         uiManager.SetUIState("PAUSE_MENU");
+        takeInput = false;
 
         //pause stuff;
     }
 
     public void Resume() {
         uiManager.SetUIState("IN_GAME");
+        PauseInput(0.1f);
 
         //resume stuff
     }

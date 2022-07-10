@@ -23,6 +23,9 @@ public class PlayerScript : MonoBehaviour {
     public delegate void PlayerResets();
     public PlayerResets playerReset;
 
+    public delegate void PlayerStops();
+    public PlayerStops playerStop;
+
     void Start() {
         line = this.GetComponent<LineRenderer>();
         rb = this.GetComponent<Rigidbody2D>();
@@ -57,14 +60,14 @@ public class PlayerScript : MonoBehaviour {
     }
 
     public void StopBall() {
+        playerStop();
         rb.velocity = new Vector2(0, 0);
         rb.angularVelocity = 0;
         isMoving = false;
     }
 
     public bool CanShoot() {
-        Debug.Log(shots.CanShoot() + " " + gameManager.takeInput + " " + rb.velocity.magnitude);
-        if (shots.CanShoot() && gameManager.takeInput && rb.velocity.magnitude == 0) return true;
+        if (shots.CanShoot() && gameManager.takeInput && !isMoving) return true;
         else return false;
     }
 
@@ -74,7 +77,7 @@ public class PlayerScript : MonoBehaviour {
     }
 
     public void DrawLine(Vector2 start, Vector2 end) {
-        if (shots.currentShots > 0 && !isMoving) {
+        if (shots.currentShots > 0 && !isMoving && gameManager.takeInput) {
             Vector2 lineVector = end - start;
             line.SetPosition(0, (Vector2)transform.position);
             line.SetPosition(1, (Vector2)transform.position-lineVector);

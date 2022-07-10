@@ -20,13 +20,14 @@ public class Gravity : MonoBehaviour
     PlacementVariation var;
     SpriteRenderer arrows;
 
-    bool doGravity = true;
+    [SerializeField] bool doGravity = true;
 
     public void Toggle(bool state) {
         doGravity = state;
     }
 
     void Awake() {
+        FindObjectOfType<PlayerScript>().playerStop += delegate {Toggle(false); };
         FindObjectOfType<PlayerScript>().playerMove += delegate {Toggle(true); };
         FindObjectOfType<PlayerScript>().playerReset += Exit;
         if (GRAV_DIR != GravDir.point) {
