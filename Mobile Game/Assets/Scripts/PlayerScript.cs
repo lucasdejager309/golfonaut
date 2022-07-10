@@ -3,86 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerScript : MonoBehaviour
-{
-    //references to components
-    LineRenderer line;
-    Rigidbody2D rb;
-
-    //variables
-    public Vector2 lastPos;
-    public Shots shots;
-
-    //exposed parameters
-    public float MOVE_FORCE_MULTIPLIER = 200;
+public class PlayerScript : MonoBehaviour {
+    public float MOVE_FORCE_MULTIPLIER;
+    public float SPIN_SPEED;
 
     public bool isMoving;
     public bool inGravField;
 
+    public Vector2 lastPos;
+    public Shots shots;
+
+    LineRenderer line;
+    Rigidbody2D rb;
+    public GameManager gameManager;
+
     public delegate void PlayerMoves();
     public PlayerMoves playerMove;
 
-    public GameManager gameManager;
+    public delegate void PlayerResets();
+    public PlayerResets playerReset;
 
     void Start() {
         line = this.GetComponent<LineRenderer>();
         rb = this.GetComponent<Rigidbody2D>();
 
-        gameManager = FindObjectOfType<GameManager>();
-
-        playerMove += gameManager.Null;
-    }
-
-    public void Move(Vector2 input) {
-        if (shots.Shoot() && gameManager.takeInput && rb.velocity.magnitude == 0) {
-            if (input != new Vector2(0,0)) {
-                lastPos = new Vector2(transform.position.x, transform.position.y);
-
-                rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
-                rb.angularVelocity = Random.Range(-360, 360);
-
-                playerMove();
-                isMoving = true;
-            }
-        }
-    }
-    
-
-    public void Retry() {
-        if (shots.currentRetries > 0 && (Vector2)transform.position != lastPos) {
-            shots.ResetToLast(true);
-            GoToLastPos();
-        }
-
-        Gravity[] gravs = FindObjectsOfType<Gravity>();
-        foreach (Gravity grav in gravs) grav.Exit();
-    }
-
-    public void Die() {
-        shots.ResetToLast(false);
-        GoToLastPos();
-        StopBall();
-    }
-
-    public void GoToLastPos() {
-        transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
+        playerMove += delegate {};
+        playerReset += delegate {};
     }
 
     void FixedUpdate() {
         float velocity = rb.velocity.magnitude;
         if (velocity < 0.1 && velocity > 0 && !inGravField) {
-            StopBall();
+            gameManager.EndOfShot();
         }
-    }
-
-    public void StopBall() {
-        rb.velocity = new Vector2(0,0);
-        isMoving = false;
-        if (shots.currentShots <= 0 && shots.currentRetries <= 0) gameManager.GameOver();
     }
 
     void OnTriggerEnter2D(Collider2D collider) {
         if (collider.GetComponent<IPowerUp>() != null) collider.GetComponent<IPowerUp>().PowerUp();
+    }
+
+    public void Move(Vector2 input) {
+        if (input != new Vector2 (0,0)) {
+            lastPos = new Vector2(transform.position.x, transform.position.y);
+
+            rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
+            rb.angularVelocity = (input*MOVE_FORCE_MULTIPLIER).magnitude*SPIN_SPEED;
+
+            shots.Shoot();
+
+            isMoving = true;
+            playerMove();
+        }
+    }
+
+    public void StopBall() {
+        rb.velocity = new Vector2(0, 0);
+        rb.angularVelocity = 0;
+        isMoving = false;
+    }
+
+    public bool CanShoot() {
+        Debug.Log(shots.CanShoot() + " " + gameManager.takeInput + " " + rb.velocity.magnitude);
+        if (shots.CanShoot() && gameManager.takeInput && rb.velocity.magnitude == 0) return true;
+        else return false;
+    }
+
+    public void GoToLastPos() {
+        transform.position = new Vector3(lastPos.x, lastPos.y, transform.position.z);
+        playerReset();
     }
 
     public void DrawLine(Vector2 start, Vector2 end) {

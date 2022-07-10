@@ -7,7 +7,7 @@ public class KillOnCollision : MonoBehaviour
     void OnTriggerEnter2D(Collider2D col) {
         PlayerScript player;
         if (player = col.GetComponent<PlayerScript>()) {
-            player.Die();
+            player.gameManager.Die();
         }
     }
 }

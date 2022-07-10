@@ -66,7 +66,7 @@ public class InputManager : MonoBehaviour
     void Ended() {
         currentPos = worldPos;
         Vector2 inputVector = currentPos - startPos;
-        player.Move(-inputVector);
+        player.gameManager.Move(-inputVector);
         player.HideLine();
     }
 

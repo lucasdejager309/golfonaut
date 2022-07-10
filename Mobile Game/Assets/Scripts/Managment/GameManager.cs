@@ -33,12 +33,15 @@ public class GameManager : MonoBehaviour
         GameObject[] gotoMenuObjects = GameObject.FindGameObjectsWithTag("MenuButton");
         foreach (GameObject obj in gotoMenuObjects) obj.GetComponent<Button>().onClick.AddListener(delegate {Exit();});
         GameObject[] retryObjects = GameObject.FindGameObjectsWithTag("RetryButton");
-        foreach (GameObject obj in retryObjects) obj.GetComponent<Button>().onClick.AddListener(delegate {player.Retry();});
+        foreach (GameObject obj in retryObjects) obj.GetComponent<Button>().onClick.AddListener(delegate {RetryShot();});
 
         GameObject.FindGameObjectWithTag("PauseButton").GetComponent<Button>().onClick.AddListener(delegate {Pause();});
         GameObject.FindGameObjectWithTag("ResumeButton").GetComponent<Button>().onClick.AddListener(delegate {Resume();});
 
         player = GameObject.FindObjectOfType<PlayerScript>();
+        player.gameManager = this;
+        player.shots = new Shots(player, startWithShots, startWithRetries, maxRetries, chargePerRetry);
+
         player.shots.update += delegate {UpdateShotsUI(); };
         playerSpawnPos = player.transform.position;
         player.lastPos = playerSpawnPos;
@@ -71,24 +74,55 @@ public class GameManager : MonoBehaviour
         uiManager.SetUIState("IN_GAME");
         player.transform.position = playerSpawnPos;
         score = 0;
-
-        player.shots = new Shots(player, startWithShots, startWithRetries, maxRetries, chargePerRetry);
-
+        
         PauseInput(0.1f);
+    }
+
+    public void Move(Vector2 input) {
+        if (player.CanShoot()) {
+            player.Move(input);
+        }
+    }
+
+    public void RetryShot() {
+        if (player.shots.currentRetries > 0 && (Vector2)transform.position != player.lastPos) {
+            player.GoToLastPos();
+            player.shots.ResetToLast(true, true);
+        }
+    }
+
+    public void EndOfShot() {
+        player.StopBall();
+        if (player.shots.currentShots <= 0 && player.shots.currentRetries > 0) {
+            RetryShot();
+        } else if (player.shots.currentRetries <= 0) {
+            GameOver();
+        }
+    }
+
+    public void Die() {
+        player.StopBall();
+        if (player.shots.currentShots > 0) {
+            player.GoToLastPos();
+            player.shots.ResetToLast(false, false);
+        } else if (player.shots.currentRetries > 0) {
+            player.GoToLastPos();
+            player.shots.ResetToLast(true, false);
+        } else GameOver();
     }
 
     public void GameOver() {
         FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
     }
 
-    public void RechargeRetry() {
-        player.shots.Recharge(1);
-    }
-
     public void Restart() {
         levelGen.Restart();
-        StartGame();
         player.shots.Restart();
+        StartGame();
+    }    
+
+    public void RechargeRetry() {
+        player.shots.Recharge(1);
     }
 
     public void Pause() {

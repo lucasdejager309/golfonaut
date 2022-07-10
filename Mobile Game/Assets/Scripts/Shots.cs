@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[System.Serializable]
 public class Shots {
     //parameters
     public int startWithShots{ get; private set; } = 4;
@@ -42,20 +41,21 @@ public class Shots {
     }
 
 
-    public void ResetToLast(bool freeShot) {
+    public void ResetToLast(bool costsRetry, bool resetShots) {
             SetCharge(0);
-            if (freeShot) {
-                SetRetries(currentRetries-1);
-                SetShots(lastShotAmount);
-            }
+            if (costsRetry) SetRetries(currentRetries-1);
+            if (resetShots) SetShots(lastShotAmount);
     }
 
-    public bool Shoot(){
+    public bool CanShoot() {
         if (currentShots > 0) {
-            lastShotAmount = currentShots;
-            SetShots(currentShots-1);
             return true;
         } return false;
+    }
+
+    public void Shoot() {
+        lastShotAmount = currentShots;
+        SetShots(currentShots-1);
     }
 
     public void Recharge(int amount) {

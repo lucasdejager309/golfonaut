@@ -10,10 +10,15 @@ public class StopOnTouch : MonoBehaviour
         Rigidbody2D rb = col.gameObject.GetComponent<Rigidbody2D>();
 
         if (rb.velocity.magnitude < STOP_ON) {
-            rb.velocity = new Vector2(0, 0);
-            rb.angularVelocity = 0;
+            if (col.gameObject.GetComponent<PlayerScript>()) {
+                col.gameObject.GetComponent<PlayerScript>().gameManager.EndOfShot();
+            } else {
+                rb.velocity = new Vector2(0, 0);
+                rb.angularVelocity = 0;
+            }
+            
             GetComponentInChildren<Gravity>().Toggle(false);
-            if (col.gameObject.GetComponent<PlayerScript>()) col.gameObject.GetComponent<PlayerScript>().StopBall();
+            
         }
     }
 }
