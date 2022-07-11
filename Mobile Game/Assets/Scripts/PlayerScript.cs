@@ -55,7 +55,6 @@ public class PlayerScript : MonoBehaviour {
 
             shots.Shoot();
 
-            isMoving = true;
             playerMove();
         }
     }

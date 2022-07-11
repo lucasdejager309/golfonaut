@@ -9,6 +9,8 @@ public class MainMenuManager : MonoBehaviour
     void Start() {
         GameObject.FindGameObjectWithTag("StartButton").GetComponent<Button>().onClick.AddListener(delegate {StartGame();});
         GameObject.FindGameObjectWithTag("SettingsButton").GetComponent<Button>().onClick.AddListener(delegate {ShowSettings();});
+        GameObject.FindGameObjectWithTag("MenuButton").GetComponent<Button>().onClick.AddListener(delegate {GetComponent<UIManager>().SetUIState("MAIN_MENU");});
+        GetComponent<UIManager>().SetUIState("MAIN_MENU");
     }
 
     public void StartGame() {
@@ -16,6 +18,6 @@ public class MainMenuManager : MonoBehaviour
     }
 
     public void ShowSettings() {
-
+        GetComponent<UIManager>().SetUIState("SETTINGS_MENU");
     }
 }

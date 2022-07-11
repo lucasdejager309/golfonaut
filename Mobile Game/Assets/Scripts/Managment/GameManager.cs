@@ -52,9 +52,19 @@ public class GameManager : MonoBehaviour
         levelGen = FindObjectOfType<LevelGen>();
         Invoke("StartGame", 0.01f);
 
+        Saving saving = GetComponent<Saving>();
+        Save save = saving.GetSave();
+
+        if (save != null) {
+            highScore = save.highScore;
+        }
+        
+
         uiManager.UpdateUIElement("UI_HighScore", highScore.ToString());
 
-        //Camera.main.rect = new Rect(0, 0, Screen.width/standardScreen.x, Screen.height/standardScreen.y);
+        Vector2 screenSize = new Vector2(Screen.width, Screen.height);
+        Vector2 scale = new Vector2(Screen.width/standardScreen.x, Screen.height/standardScreen.y);
+        Camera.main.rect = new Rect(0, 0, Screen.width*scale.x, Screen.height*scale.y);
     }
 
     void Update() {
@@ -71,6 +81,7 @@ public class GameManager : MonoBehaviour
     }
 
     void StartGame() {
+        takeInput = true;
         uiManager.SetUIState("IN_GAME");
         player.transform.position = playerSpawnPos;
         score = 0;
@@ -86,6 +97,7 @@ public class GameManager : MonoBehaviour
 
     public void RetryShot() {
         if (player.shots.currentRetries > 0 && (Vector2)transform.position != player.lastPos) {
+            player.StopBall();
             player.GoToLastPos();
             player.shots.ResetToLast(true, true);
         }
@@ -93,31 +105,40 @@ public class GameManager : MonoBehaviour
 
     public void EndOfShot() {
         player.StopBall();
-        if (player.shots.currentShots <= 0 && player.shots.currentRetries > 0) {
-            RetryShot();
-        } else if (player.shots.currentRetries <= 0) {
-            GameOver();
+        if (player.shots.currentShots > 0) {
+            //nothing;
+        } else {
+            if (player.shots.currentRetries > 0) {
+                player.shots.ResetToLast(true, false);
+                player.shots.AddShots(1);
+                player.GoToLastPos();
+            } else if (player.shots.currentRetries <= 0 && player.shots.currentShots <= 0) {
+                GameOver();
+            }
         }
     }
 
     public void Die() {
         player.StopBall();
+        player.GoToLastPos();
 
         if (player.shots.currentShots > 0) {
-            player.GoToLastPos();
-            player.shots.ResetToLast(false, false);
-        } else if (player.shots.currentRetries > 0 && player.shots.currentShots <= 0) {
-            player.GoToLastPos();
-            player.shots.ResetToLast(true, false);
-            player.shots.SetShots(1);
-        } else GameOver();
+            player.shots.AddShots(-1);
+        } else if (player.shots.currentRetries > 0) {
+            player.shots.AddRetry(-1);
+            player.shots.AddShots(1);
+        } else {
+            GameOver();
+        }
     }
 
     public void GameOver() {
         FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
+        takeInput = false;
     }
 
     public void Restart() {
+        GetComponent<Saving>().Save(highScore);
         levelGen.Restart();
         player.shots.Restart();
         StartGame();
@@ -151,6 +172,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void Exit() {
+        GetComponent<Saving>().Save(highScore);
         SceneManager.LoadScene(0);
     }
 

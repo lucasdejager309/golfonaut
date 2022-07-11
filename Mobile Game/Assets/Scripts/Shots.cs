@@ -77,6 +77,10 @@ public class Shots {
         update();
     }
 
+    public void AddRetry(int amount) {
+        SetRetries(currentRetries+amount);
+    }
+
     public void SetRetries(int amount) {
         currentRetries = amount;
         update();

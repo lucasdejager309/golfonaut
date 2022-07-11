@@ -27,9 +27,12 @@ public class Gravity : MonoBehaviour
     }
 
     void Awake() {
-        FindObjectOfType<PlayerScript>().playerStop += delegate {Toggle(false); };
-        FindObjectOfType<PlayerScript>().playerMove += delegate {Toggle(true); };
-        FindObjectOfType<PlayerScript>().playerReset += Exit;
+        if (FindObjectOfType<PlayerScript>() != null) {
+            FindObjectOfType<PlayerScript>().playerStop += delegate {Toggle(false); };
+            FindObjectOfType<PlayerScript>().playerMove += delegate {Toggle(true); };
+            FindObjectOfType<PlayerScript>().playerReset += Exit;
+        }
+        
         if (GRAV_DIR != GravDir.point) {
             arrows = transform.GetChild(0).GetComponent<SpriteRenderer>();
             ScaleArrows();
