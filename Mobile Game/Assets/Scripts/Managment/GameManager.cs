@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
 
     public bool takeInput = true;
 
+    public GameObject deathParticle;
+
     PlayerScript player;
     Vector2 playerSpawnPos;
     
@@ -41,6 +43,7 @@ public class GameManager : MonoBehaviour
         player = GameObject.FindObjectOfType<PlayerScript>();
         player.gameManager = this;
         player.shots = new Shots(player, startWithShots, startWithRetries, maxRetries, chargePerRetry);
+        GameObject.FindGameObjectWithTag("UI_RetriesLeft").GetComponent<NotchedSlider>().SetMaxValue(maxRetries);
 
         player.shots.update += delegate {UpdateShotsUI(); };
         playerSpawnPos = player.transform.position;
@@ -52,8 +55,8 @@ public class GameManager : MonoBehaviour
         levelGen = FindObjectOfType<LevelGen>();
         Invoke("StartGame", 0.01f);
 
-        Saving saving = GetComponent<Saving>();
-        Save save = saving.GetSave();
+        SaveManager saveManager = new SaveManager();
+        Save save = saveManager.GetSave();
 
         if (save != null) {
             highScore = save.highScore;
@@ -70,7 +73,7 @@ public class GameManager : MonoBehaviour
     void Update() {
         GetComponent<InputManager>().GetInput();
         CheckScore();
-        UpdateShotsUI();
+        //UpdateShotsUI();
 
         if (GENERATE) {
             if ((levelGen.levelEnd.position.y - player.transform.position.y) < levelGen.GEN_DISTANCE) {
@@ -81,9 +84,13 @@ public class GameManager : MonoBehaviour
     }
 
     void StartGame() {
+        player.GetComponent<SpriteRenderer>().enabled = true;
+        player.GetComponent<Collider2D>().enabled = true;
         takeInput = true;
         uiManager.SetUIState("IN_GAME");
         player.transform.position = playerSpawnPos;
+        player.lastPos = playerSpawnPos;
+        player.shots.SetLastShots(player.shots.currentShots);
         score = 0;
         
         PauseInput(0.1f);
@@ -111,7 +118,13 @@ public class GameManager : MonoBehaviour
             if (player.shots.currentRetries > 0) {
                 player.shots.ResetToLast(true, false);
                 player.shots.AddShots(1);
-                player.GoToLastPos();
+                Task t = new Task(DeathAnim());
+                t.Finished += delegate {
+                    takeInput = true;
+                    player.GoToLastPos();
+                    player.GetComponent<SpriteRenderer>().enabled = true;
+                    player.GetComponent<Collider2D>().enabled = true;
+                };
             } else if (player.shots.currentRetries <= 0 && player.shots.currentShots <= 0) {
                 GameOver();
             }
@@ -120,25 +133,43 @@ public class GameManager : MonoBehaviour
 
     public void Die() {
         player.StopBall();
-        player.GoToLastPos();
+        
+        
+        Task t = new Task(DeathAnim());
+        t.Finished += delegate {
+            takeInput = true;
+            player.GoToLastPos();
+            player.GetComponent<SpriteRenderer>().enabled = true;
+            player.GetComponent<Collider2D>().enabled = true;
 
-        if (player.shots.currentShots > 0) {
-            player.shots.AddShots(-1);
-        } else if (player.shots.currentRetries > 0) {
-            player.shots.AddRetry(-1);
-            player.shots.AddShots(1);
-        } else {
-            GameOver();
-        }
+            if (player.shots.currentShots > 0) {
+                player.shots.ResetToLast(false, false);
+            } else if (player.shots.currentRetries > 0) {
+                player.shots.ResetToLast(true, false);
+                player.shots.AddShots(1);
+            }
+
+            if (player.shots.currentRetries <= 0 && player.shots.currentShots <= 0) GameOver(false);
+        };
     }
 
-    public void GameOver() {
-        FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
-        takeInput = false;
+    public void GameOver(bool doAnimation = true) {
+        if (doAnimation) {
+            Task t = new Task(DeathAnim());
+            t.Finished += delegate {
+                FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
+                takeInput = false;
+            };
+        } else {
+            FindObjectOfType<UIManager>().SetUIState("DEATH_MENU");
+            takeInput = false;
+        }
+        
     }
 
     public void Restart() {
-        GetComponent<Saving>().Save(highScore);
+        SaveManager saveManager = new SaveManager();
+        saveManager.SaveScore(highScore);
         levelGen.Restart();
         player.shots.Restart();
         StartGame();
@@ -172,13 +203,19 @@ public class GameManager : MonoBehaviour
     }
 
     public void Exit() {
-        GetComponent<Saving>().Save(highScore);
+        FindObjectOfType<AudioManager>().DestroyAll();
+
+
+        SaveManager saveManager = new SaveManager();
+        saveManager.SaveScore(highScore);
         SceneManager.LoadScene(0);
     }
 
     public void UpdateShotsUI() {
         uiManager.UpdateUIElement("UI_Shots", player.shots.currentShots.ToString());
-        uiManager.UpdateUIElement("UI_Retries", player.shots.currentRetries.ToString());
+        if (GameObject.FindGameObjectWithTag("UI_RetriesLeft") != null) {
+            GameObject.FindGameObjectWithTag("UI_RetriesLeft").GetComponent<NotchedSlider>().SetValue(player.shots.currentRetries);
+        }
     }
 
     void CheckScore() {
@@ -204,5 +241,17 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    public void Null() {}
+    public IEnumerator DeathAnim() {
+        takeInput = false;
+        player.GetComponent<SpriteRenderer>().enabled = false;
+        player.GetComponent<Collider2D>().enabled = false;
+
+        GameObject particles = Instantiate(deathParticle, player.transform.position, Quaternion.Euler(-90, 0, 0));
+        FindObjectOfType<AudioManager>().PlaySound("die");
+        float timeElapsed = 0;
+        while (timeElapsed < particles.GetComponent<ParticleSystem>().main.startLifetime.constant) {
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
 }

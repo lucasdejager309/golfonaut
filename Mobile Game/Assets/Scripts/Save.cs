@@ -7,7 +7,12 @@ public class Save
 {   
     public int highScore;
 
-    public Save(int highScore) {
-        this.highScore = highScore;
+    public float musicVolume;
+    public float soundVolume;
+
+    public Save() {
+        highScore = 0;
+        musicVolume = 0.15f;
+        soundVolume = 0.5f;
     }
 }

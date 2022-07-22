@@ -115,6 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25231bab2a6e33042bf8c183fd4cf1f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  particle: {fileID: 1599783832159186861, guid: 6c7ad043d03ac214da03f031ff4f3867, type: 3}
   shotsToAdd: 1
 --- !u!114 &-1881863491449462584
 MonoBehaviour:

@@ -11,6 +11,8 @@ public class MainMenuManager : MonoBehaviour
         GameObject.FindGameObjectWithTag("SettingsButton").GetComponent<Button>().onClick.AddListener(delegate {ShowSettings();});
         GameObject.FindGameObjectWithTag("MenuButton").GetComponent<Button>().onClick.AddListener(delegate {GetComponent<UIManager>().SetUIState("MAIN_MENU");});
         GetComponent<UIManager>().SetUIState("MAIN_MENU");
+
+        FindObjectOfType<AudioManager>().PlaySound("music", true);
     }
 
     public void StartGame() {

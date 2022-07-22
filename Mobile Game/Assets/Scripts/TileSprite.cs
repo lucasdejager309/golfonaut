@@ -13,6 +13,7 @@ public class TileSprite : MonoBehaviour
 {
     public Facing facing = Facing.up;
     Sprite sprite;
+    
     void Start() {
         BoxCollider2D col = GetComponent<BoxCollider2D>();
         Vector2 size = col.bounds.size;

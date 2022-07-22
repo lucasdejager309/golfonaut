@@ -12,4 +12,9 @@ public class MainMenuFakeBall : MonoBehaviour
             transform.position = new Vector2(transform.position.x, teleportTo);
         }
     }
+
+    void OnCollisionEnter2D(Collision2D collision) {
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (!collision.otherCollider.isTrigger && rb.velocity.magnitude > 0.3f) FindObjectOfType<AudioManager>().PlayFromGroup("bounce");
+    }
 }

@@ -54,8 +54,12 @@ public class Shots {
     }
 
     public void Shoot() {
-        lastShotAmount = currentShots;
+        SetLastShots(currentShots);
         SetShots(currentShots-1);
+    }
+
+    public void SetLastShots(int amount) {
+        lastShotAmount = amount;
     }
 
     public void Recharge(int amount) {

@@ -50,6 +50,8 @@ public class InputManager : MonoBehaviour
     }
 
     void Began() {
+        FindObjectOfType<UIManager>().SetOpacity("IN_GAME", 20f, true, 0.5f);
+
         startPos = worldPos;
         currentPos = worldPos;
     }
@@ -64,6 +66,8 @@ public class InputManager : MonoBehaviour
     }
 
     void Ended() {
+        FindObjectOfType<UIManager>().SetOpacity("IN_GAME", 100f, true, 0.5f);
+
         currentPos = worldPos;
         Vector2 inputVector = currentPos - startPos;
         player.gameManager.Move(-inputVector);

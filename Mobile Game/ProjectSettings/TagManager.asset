@@ -19,6 +19,7 @@ TagManager:
   - UI_HighScore
   - ResumeButton
   - PauseButton
+  - AudioSource
   layers:
   - Default
   - TransparentFX

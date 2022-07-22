@@ -46,9 +46,16 @@ public class PlayerScript : MonoBehaviour {
         if (collider.GetComponent<IPowerUp>() != null) collider.GetComponent<IPowerUp>().PowerUp();
     }
 
+    void OnCollisionEnter2D(Collision2D collision) {
+        if (!collision.otherCollider.isTrigger && rb.velocity.magnitude > 0.3f) FindObjectOfType<AudioManager>().PlayFromGroup("bounce");
+    }
+
     public void Move(Vector2 input) {
         if (input != new Vector2 (0,0)) {
+            FindObjectOfType<AudioManager>().PlayFromGroup("shoot");
             lastPos = new Vector2(transform.position.x, transform.position.y);
+
+            isMoving = true;
 
             rb.AddForce(input*MOVE_FORCE_MULTIPLIER);
             rb.angularVelocity = (input*MOVE_FORCE_MULTIPLIER).magnitude*SPIN_SPEED;

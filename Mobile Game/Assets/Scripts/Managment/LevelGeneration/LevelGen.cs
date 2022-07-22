@@ -5,11 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public class DifficultyGroup {
     public GameObject[] prefabs;
-
-    public GameObject GetObstacle() {
-        Random.InitState((int)System.DateTime.Now.Ticks);
-        return prefabs[Random.Range(0, prefabs.Length-1)];
-    }
 }
 
 public class LevelGen : MonoBehaviour
@@ -44,6 +39,11 @@ public class LevelGen : MonoBehaviour
     }
 
     public void Restart() {
+        Translate[] translates = FindObjectsOfType<Translate>();
+        foreach (Translate tr in translates) {
+            tr.Stop();
+        }
+        
         foreach (GameObject obj in spawnedObstacles) {
             Destroy(obj);
         }
@@ -55,7 +55,7 @@ public class LevelGen : MonoBehaviour
     public void GenerateNewSection() {
         //GENERATE OBSTACLES
         while (obstaclesEnd.position.y < levelEnd.position.y+GEN_DISTANCE) {
-            GameObject obstacle = GetDifficulty(gameManager.score).GetObstacle();
+            GameObject obstacle = GetObstacle(GetDifficulty(gameManager.score));
             float size = FindObjectOfType<GameManager>().FindChildWithTag(obstacle, "ObstacleEnd").transform.position.y;
             GameObject generatedObstacle = Instantiate(obstacle, obstaclesEnd.position, Quaternion.identity);
             generatedObstacle.transform.position = new Vector3(generatedObstacle.transform.position.x, generatedObstacle.transform.position.y, generatedObstacle.transform.position.z+2);
@@ -81,9 +81,18 @@ public class LevelGen : MonoBehaviour
     DifficultyGroup GetDifficulty(int currentScore) {
         int difficulty = Mathf.Clamp(Mathf.CeilToInt((currentScore/DIFFICULTY_SCALE)*difficultyGroups.Length), 0, difficultyGroups.Length);
 
-        int curve = Random.Range(0, difficultyGroups.Length) + Random.Range(0,difficultyGroups.Length) - (difficultyGroups.Length)-1;
+        int curve = (int)GetRandomRange(0, difficultyGroups.Length) + Random.Range(0,difficultyGroups.Length) - (difficultyGroups.Length)-1;
         int result = Mathf.Clamp(difficulty + curve, 0, difficultyGroups.Length-1);
 
         return difficultyGroups[result];
+    }
+
+    public float GetRandomRange(float min, float max) {
+        Random.InitState((int)System.DateTime.Now.Ticks*(spawnedObstacles.Count+1));
+        return Random.Range(min, max);
+    }
+
+    public GameObject GetObstacle(DifficultyGroup group) {
+        return group.prefabs[(int)GetRandomRange(0, group.prefabs.Length)];
     }
 }
